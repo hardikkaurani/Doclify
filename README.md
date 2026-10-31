@@ -1,304 +1,277 @@
 <div align="center">
-  <h1><a href="https://pypi.org/project/doclify/">Doclify</a></h1>
-  <p><i>A hands-on exploration of advanced context engineering — built as an open source AI agent for documentation.</i></p>
 
-  [![PyPI Version](https://img.shields.io/pypi/v/doclify?style=flat&color=blue)](https://pypi.org/project/doclify/)
-  [![PyPI Downloads](https://img.shields.io/pypi/dm/doclify?style=flat&color=blue)](https://pypi.org/project/doclify/)
-  [![GitHub Stars](https://img.shields.io/github/stars/KalyanM45/Doclify?style=flat&color=ffd700)](https://github.com/KalyanM45/Doclify/stargazers)
-  [![GitHub Issues](https://img.shields.io/github/issues/KalyanM45/Doclify?style=flat&color=red)](https://github.com/KalyanM45/Doclify/issues)
-  [![GitHub Forks](https://img.shields.io/github/forks/KalyanM45/Doclify?style=flat&color=green)](https://github.com/KalyanM45/Doclify/network/members)
-  [![GitHub Discussions](https://img.shields.io/github/discussions/KalyanM45/Doclify?style=flat&color=purple)](https://github.com/KalyanM45/Doclify/discussions)
-  [![GitHub License](https://img.shields.io/github/license/KalyanM45/Doclify?style=flat&color=blue)](https://github.com/KalyanM45/Doclify/blob/main/LICENSE)
+# ⚡ Doclify
+
+**AI-Native Codebase Documentation Engine & Context Engineering Laboratory**
+
+[![GitHub Stars](https://img.shields.io/github/stars/hardikkaurani/Doclify?style=for-the-badge&logo=github&color=ffd700)](https://github.com/hardikkaurani/Doclify/stargazers)
+[![GitHub Forks](https://img.shields.io/github/forks/hardikkaurani/Doclify?style=for-the-badge&logo=github&color=555555)](https://github.com/hardikkaurani/Doclify/network/members)
+[![GitHub Issues](https://img.shields.io/github/issues/hardikkaurani/Doclify?style=for-the-badge&logo=github&color=ff4444)](https://github.com/hardikkaurani/Doclify/issues)
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg?style=for-the-badge)](https://www.gnu.org/licenses/agpl-3.0)
+[![Python Version](https://img.shields.io/badge/python-3.10%2B-blue?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
+[![Powered by Groq](https://img.shields.io/badge/Inference-Groq_LPU-f55036?style=for-the-badge&logo=groq&logoColor=white)](https://groq.com/)
+
+<p align="center">
+  <b>Doclify</b> scans your repository, distills structured context file-by-file through an isolated subagent pipeline, and synthesizes clean, comprehensive, production-grade documentation — entirely from your terminal.
+</p>
+
+[Quickstart](#-quickstart) • [Architecture](#-architecture--pipeline-workflow) • [Context Engineering (ACE)](#-the-ace-framework--why-doclify-works) • [CLI Reference](#-cli-command-reference) • [Configuration](#-configuration-doclifyyaml)
+
 </div>
 
 ---
 
-**Doclify** is an AI agent that documents your software projects. It scans your codebase, builds structured context for each file using a multi-stage agentic pipeline, and generates a comprehensive, professional `README.md` — all from the command line.
+## 💡 Overview
 
-But the tool itself is secondary. The real purpose of this project is described below.
+Modern AI coding agents frequently stumble in large codebases. The cause is rarely model capability — **it is almost always context pollution and degradation**. When you dump an entire repository into a prompt, context limits saturate, noise drowns out signal, and the agent hallucinates.
+
+**Doclify** is built from the ground up to solve this using **Advanced Context Engineering (ACE)**:
+- **Two-Stage Hierarchical Compaction:** Raw code never enters the final synthesis prompt. Each file is distilled into dense semantic summaries first.
+- **Subagent Context Isolation:** Summarization runs in bounded, ephemeral context windows so intermediate reasoning noise is discarded.
+- **Incremental State Caching:** Distilled summaries are stored in `.doclify/cache.json`, allowing instant updates when individual files change without paying full re-computation costs.
+- **Lightning-Fast Inference:** Powered by Groq's high-speed inference engine for near-instant responses.
 
 ---
 
-## 🧠 Why This Project Exists — Advanced Context Engineering
+## 🏗 Architecture & Pipeline Workflow
 
-This project is a **deliberate, hands-on laboratory for learning and practising advanced context engineering for AI agents**.
+Doclify follows a strict **Research → Plan → Implement** separation inspired by the 12-factor agent pattern:
 
-The core inspiration comes from **Dex Horthy** (founder of [HumanLayer](https://humanlayer.dev)) and his write-up on **[Advanced Context Engineering for Coding Agents](https://github.com/humanlayer/advanced-context-engineering-for-coding-agents/blob/main/ace-fca.md)** — one of the most concrete, practitioner-level treatments of what it actually takes to make AI agents work in real production codebases, not just toy examples.
+```mermaid
+flowchart TD
+    subgraph Phase1["1. Discovery Phase (doclify init)"]
+        Repo["Repository Files"] --> Scan["File Scanner & .gitignore Filter"]
+        Scan --> Manifest["doclify.yaml (Context Manifest)"]
+    end
+
+    subgraph Phase2["2. Subagent Compaction Phase (doclify run)"]
+        Manifest --> Loop["Iterate Curated Files"]
+        Loop --> Subagent["Bounded Subagent Summarizer"]
+        Prompt1["batch_summary.txt"] --> Subagent
+        Subagent --> Cache[(".doclify/cache.json (Compacted Context Cache)")]
+    end
+
+    subgraph Phase3["3. Synthesis Phase"]
+        Cache --> Synthesis["Global Synthesis Agent"]
+        Prompt2["final_summary.txt"] --> Synthesis
+        Synthesis --> Backup["Backup existing README -> README-prev.md"]
+        Backup --> Output["README.md (Production Documentation)"]
+    end
+
+    subgraph Phase4["4. Targeted Refresh (doclify update <path>)"]
+        DiffFile["Modified Source File"] --> UpdateSubagent["Re-run Subagent on File"]
+        UpdateSubagent --> Cache
+        Cache --> QuickRebuild["doclify update . (Instant README rebuild)"]
+        QuickRebuild --> Output
+    end
+```
+
+---
+
+## 🧠 The ACE Framework — Why Doclify Works
+
+Doclify is an empirical implementation of the principles articulated by **Dex Horthy** (founder of HumanLayer) in *[Advanced Context Engineering for Coding Agents](https://github.com/humanlayer/advanced-context-engineering-for-coding-agents/blob/main/ace-fca.md)*:
 
 > *"The contents of your context window are the ONLY lever you have to affect the quality of your output."*
-> — Dex Horthy, HumanLayer
 
-The thesis is direct: **AI agent failures in complex codebases are almost never model failures. They are context failures.** The agent hallucinated because a crucial fact was missing. It chose the wrong approach because it received ambiguous information. It produced low-quality output because it had no reference for what "good" looks like in this specific domain.
-
-Picking a smarter model does not fix this. Structuring better context does.
-
-Doclify is built as a real, non-trivial environment for testing, breaking, and improving context engineering techniques — with open source feedback loops that private experiments cannot replicate.
-
----
-
-## 📖 The ACE Framework — What Dex Horthy's Research Actually Says
-
-Read the full piece here: **[Advanced Context Engineering for Coding Agents](https://github.com/humanlayer/advanced-context-engineering-for-coding-agents/blob/main/ace-fca.md)**
-
-Below is a detailed breakdown of the core principles and how Doclify's agentic pipeline is built around each of them.
+| ACE Principle | Problem in Naive Approaches | Doclify's Implementation |
+| :--- | :--- | :--- |
+| **Stateless LLMs** | Expecting models to "remember" or infer cross-file context without structure. | Prompts (`doclify/prompts/`) are treated as primary versioned source code. |
+| **Frequent Intentional Compaction (FIC)** | Context windows get saturated (80%+ capacity), causing hallucination and lost details. | **Target 40–60% window:** 500 lines of source code are compressed into 3–4 dense summary sentences. |
+| **Subagent Context Isolation** | Giant single-prompt runs leak tool logs, dead ends, and intermediate code tokens into final generation. | Each file summary runs in an isolated subagent inference call. The parent only receives distilled output. |
+| **Incremental State Persistence** | Re-running full docs on every minor change is expensive, slow, and wasteful. | Distilled state is cached in `.doclify/cache.json`. `doclify update <file>` recalculates only the diff. |
+| **Research → Plan → Implement** | Blurring code inspection and generation results in shallow, poorly structured summaries. | `init` does zero inference (pure discovery); `run` compiles summaries into documentation. |
 
 ---
 
-### 1. LLMs Are Stateless Functions — Input Quality Is Everything
-
-The 12-factor agents framework makes this point explicitly: LLMs have no persistent state. Every inference call starts from zero. The only thing that changes between a good result and a bad result — without retraining the model — is the quality of the input you construct.
-
-This is not a minor observation. It reframes the entire problem. Asking "how do I get a better AI agent?" becomes the same question as "how do I build better inputs?"
-
-**How Doclify applies this:**
-
-Doclify treats every stage of its pipeline as an input construction problem. The two prompts in `prompts/batch_summary.txt` and `prompts/final_summary.txt` are not convenience wrappers — they are the primary engineering artefacts. The model is a fixed function; the input is what we control and optimise.
-
----
-
-### 2. Frequent Intentional Compaction (FIC)
-
-This is the central technique from the ACE document. The core idea: as an AI agent works through a complex problem, its context window fills with noisy intermediate state — file search results, tool call outputs, build logs, dead ends, partial reasoning. If you let this accumulate, the quality of the agent's output degrades. The agent starts to lose the thread.
-
-**Intentional compaction** means pausing at strategic points and asking the agent to distil everything it has learned into a structured, compact document — capturing the end goal, the approach taken, what has been completed, and what the current blocker is. Then starting a fresh context window from that compact document rather than from the full noisy history.
-
-Dex's recommended cadence: keep context window utilisation in the **40–60% range**. Never let the window fill. Compact before you need to.
-
-The hierarchy of what makes a context window bad, in order of severity:
-
-| Priority | Problem | Why It's Worse |
-|----------|---------|----------------|
-| 1 (worst) | Incorrect information | Agent makes confident wrong decisions |
-| 2 | Missing information | Agent hallucinates to fill the gap |
-| 3 | Too much noise | Agent loses signal, degrades on complex reasoning |
-
-**How Doclify applies this:**
-
-The two-stage pipeline is intentional compaction in code. Stage 1 forces each file through a compression step — a 500-line source file becomes 3–4 sentences of dense, structured signal. That summary is cached. Stage 2 assembles only the summaries (not the raw files) as input to the final agent call. The raw code never touches the final context window.
-
-The cache in `.doclify/cache.json` is the compaction artefact. It stores the already-distilled state so the agent can resume from a clean, compact foundation on subsequent runs rather than re-processing everything from scratch.
-
----
-
-### 3. Research → Plan → Implement
-
-Dex's workflow splits agentic work into three distinct phases, each with a deliberately separate context window:
-
-**Research** — the agent's only job is to understand the codebase: find relevant files, trace information flow, identify where the relevant logic lives. The output is a structured research document. Nothing is changed.
-
-**Plan** — using the research document as input (not the raw codebase), the agent produces a step-by-step implementation plan: exact files to edit, precise testing strategy, verification steps per phase. The output is a plan document. Still nothing is changed.
-
-**Implement** — the agent executes the plan phase by phase. After each verified phase, the current status is compacted back into the plan document before proceeding. Only this phase requires a working branch.
-
-The key insight: **a bad line in the research document can produce thousands of bad lines of code**. A bad line in the plan can produce hundreds. A bad line of code is just a bad line of code. Human review effort should be concentrated at the highest-leverage point — research and planning — not at the code review stage after the damage is already done.
-
-> *"I can't read 2000 lines of Go daily. But I can read 200 lines of a well-written implementation plan."*
-> — Dex Horthy
-
-**How Doclify applies this:**
-
-`doclify init` is the research phase — the agent scans the repository, identifies all relevant files, and compiles its findings into `doclify.yaml`. No inference happens here; this is pure discovery.
-
-`doclify run` is the plan-and-implement phase — it reads the structured output of init, processes each file in sequence, and builds toward the final README.
-
-`doclify update <path>` is targeted re-planning — when a specific file changes, only that slice of the plan is invalidated and recomputed. The rest of the cached context remains valid.
-
----
-
-### 4. Subagents for Context Isolation
-
-From the ACE document: subagents are not about role-playing. They are a **context management tool**. When an agent needs to search a codebase, understand a dependency, or summarise a file, that discovery process generates a large volume of noisy intermediate output. If the parent agent does this work itself, that noise pollutes its context window for the rest of the task.
-
-The solution: delegate discovery tasks to a subagent with a fresh context window. The subagent does the noisy work, distils the result into a compact summary, and returns only the summary to the parent. The parent's context window stays clean.
-
-**How Doclify applies this:**
-
-Each file summary call in the pipeline is effectively a subagent invocation — a fresh, bounded inference call whose only job is to distil one file into a dense paragraph. The parent pipeline never sees the raw file content again after handing it to the summariser. It only receives the compacted output.
-
-This is why the two-stage architecture exists. A single-shot "summarise the entire codebase at once" approach would be both token-expensive and context-polluting. The subagent-per-file pattern keeps each call bounded and focused.
-
----
-
-### 5. Specs Are the New Code — Prompts as Source Artefacts
-
-Sean Grove's framing from AI Engineer 2025, cited in the ACE document: developers who vibe-code for two hours, discard their prompts, and commit only the final output are doing the equivalent of a Java developer committing a compiled JAR while throwing away the source.
-
-**The prompt is the source. The generated output is the compiled artefact.**
-
-This means prompts deserve the same rigour as code — version control, peer review, iteration, and documentation of why specific constraints exist.
-
-**How Doclify applies this:**
-
-The two prompt files in `doclify/prompts/` are version-controlled and treated as the primary engineering artefacts of the project. Every constraint in those prompts — negative examples ("do not write X"), explicit delimiters, output format rules — exists because removing it produced measurably worse output. The prompts have a changelog, not just the Python code.
-
-When a generated README is poor quality, the first question is not "which model should we use?" — it is "what is missing or incorrect in the prompt that caused this context failure?"
-
----
-
-### 6. Mental Alignment — The Hidden Cost of High-Volume AI Output
-
-The ACE document identifies an underappreciated problem with productive AI agents: as code volume increases dramatically, a larger proportion of the codebase becomes unfamiliar to every engineer at any given time. Mental alignment — everyone on the team understanding how the code is changing and why — starts to break down.
-
-Code review was designed to solve this. But it was designed for human-pace code production. At AI-agent pace (2000-line PRs every few days), code review can no longer carry the full mental-alignment load. The artefacts that maintain alignment need to move upstream — into research documents and implementation plans that engineers can actually read and evaluate before the code is written.
-
-**How Doclify applies this:**
-
-Documentation generated by Doclify is itself a mental alignment artefact. A well-structured README keeps the entire team oriented to what the project is, how it is structured, and how the key components relate. When the README is generated by an agent with good context, it is a side effect of the agent genuinely understanding the codebase — not a description of file names.
-
-The quality of the README is a proxy for the quality of the agent's context. If the README is vague, the context was vague.
-
----
-
-## 🎯 What Doclify Is Really Practising
-
-| Context Engineering Concept | How Doclify Implements It |
-|-----------------------------|---------------------------|
-| Stateless LLM — input is everything | Prompts treated as primary engineering artefacts, not boilerplate |
-| Frequent Intentional Compaction | Two-stage pipeline: raw files → dense summaries → final synthesis |
-| Compaction artefact persistence | `cache.json` stores distilled state; runs resume from compact context |
-| Subagent context isolation | Per-file summariser calls keep raw content out of the synthesis context window |
-| Research → Plan → Implement | `init` (discover) → `run` (synthesise) → `update` (selective replan) |
-| Minimise context window utilisation | Each inference call is bounded; raw files never enter the final context |
-| Prompts as source code | `prompts/` are version-controlled; constraints are documented and reviewed |
-| High-leverage human review | Every generated README is a reviewable artefact; failures trace back to prompt gaps |
-
----
-
-## 🚀 Getting Started
+## 🚀 Quickstart
 
 ### 1. Installation
 
+Install Doclify in your environment:
+
 ```bash
-pip install doclify
+# Clone the repository
+git clone https://github.com/hardikkaurani/Doclify.git
+cd Doclify
+
+# Install in editable mode with pip
+pip install -e .
+
+# Or using uv
+uv pip install -e .
 ```
 
-### 2. Configure Your API Key
+### 2. Configure Your Groq API Key
 
-Doclify runs its agentic pipeline against a fast LLM inference API. Set your API key as an environment variable or place it in a `.env` file at your project root.
+Doclify uses Groq's high-speed inference engine. Get your free API key at [console.groq.com](https://console.groq.com/).
 
-| Platform | Command |
-| :--- | :--- |
-| **Windows (CMD)** | `set GROQ_API_KEY=your_api_key_here` |
-| **Windows (PS)** | `$env:GROQ_API_KEY="your_api_key_here"` |
-| **Linux / macOS** | `export GROQ_API_KEY=your_api_key_here` |
-| **.env File** | `GROQ_API_KEY=your_api_key_here` |
+```bash
+# Windows PowerShell
+$env:GROQ_API_KEY="gsk_your_groq_api_key_here"
 
-*(Get a free API key at [console.groq.com](https://console.groq.com/))*
+# Windows Command Prompt
+set GROQ_API_KEY=gsk_your_groq_api_key_here
+
+# Linux / macOS
+export GROQ_API_KEY="gsk_your_groq_api_key_here"
+```
+
+*Alternatively, create a `.env` file in your project root:*
+```env
+GROQ_API_KEY=gsk_your_groq_api_key_here
+```
+
+### 3. Generate Documentation in 3 Steps
+
+```bash
+# Step 1: Scan repository and generate context manifest
+doclify init
+
+# Step 2: (Optional) Explore and choose an LLM model
+doclify models
+doclify set default llama-3.3-70b-versatile
+
+# Step 3: Run the documentation pipeline
+doclify run
+```
 
 ---
 
-## 📖 CLI Reference
+## 📖 CLI Command Reference
 
-Doclify exposes four commands that map directly to the Research → Plan → Implement workflow.
+Doclify provides an intuitive CLI powered by `click` and `rich`:
 
-### `doclify init` — Research Phase
-
-Scan the repository and build the context manifest.
-
-- Walks your project folder respecting all `.gitignore` rules
-- Produces `doclify.yaml` — the structured list of files the agent will process
-- Creates `.doclify/` for cache and log storage
-- Safe to re-run: updates the file manifest while preserving your model configuration
-
+### `doclify init`
+Scans the current directory, respects `.gitignore`, creates `.doclify/`, and generates `doclify.yaml`.
 ```bash
 doclify init
 ```
+> [!NOTE]
+> Re-running `doclify init` is safe: it discovers newly created files while preserving your customized model settings.
 
-Run this first whenever you start documenting a new project, or when the project structure has changed significantly.
+---
 
-### `doclify models` — Discover Available Models
-
-List all AI models available to the agent.
-
-- Fetches a real-time table of available models with context window sizes and output limits
-- Use this to select a model appropriate for your codebase size
-
+### `doclify models`
+Fetches a live, beautifully formatted table of all active Groq models, sorted alphabetically by developer with context windows and speed limits.
 ```bash
 doclify models
 ```
 
-### `doclify set default <model_id>` — Configure the Agent
+---
 
-Set the default model for all future pipeline runs.
-
+### `doclify set default <model_id>`
+Configures the default LLM model in `doclify.yaml`.
 ```bash
 doclify set default llama-3.3-70b-versatile
+# or
+doclify set default qwen/qwen3-32b
 ```
 
-This updates `doclify.yaml`. You can override it per-run with `--model`.
+---
 
-### `doclify run` — Plan and Implement Phase
-
-Execute the full agentic documentation pipeline.
-
-- Reads the file manifest from `doclify.yaml`
-- Runs Stage 1: each file is processed by a bounded summariser agent → dense summary cached to `.doclify/cache.json`
-- Runs Stage 2: all summaries are assembled into the final context window → README synthesised
-- Backs up any existing `README.md` before overwriting
-
+### `doclify run`
+Executes the full two-stage documentation pipeline. If a `README.md` already exists, Doclify automatically backs it up to `README-prev.md`.
 ```bash
+# Standard run
 doclify run
+
+# Override model temporarily for this run
+doclify run --model llama-3.3-70b-versatile
 ```
 
-Override the model for a single run without changing config:
+---
 
+### `doclify update <path>`
+Selectively refreshes documentation for modified files without re-processing the entire project.
 ```bash
-doclify run --model qwen/qwen3-32b
-```
+# Update cache for a specific file
+doclify update src/services/auth.py
 
-### `doclify update <path>` — Selective Context Refresh
-
-Recompute only the cache entries that are stale, then optionally regenerate the README.
-
-- Targeted update: invalidates and recomputes the summary for a specific file or directory
-- Full regeneration from existing cache: use `.` as the path
-
-```bash
-# Update a specific file's summary in the cache
-doclify update src/database/connection.py
-
-# Regenerate README from the current cache without re-running all summaries
+# Rebuild README instantly from existing cache (zero file re-summarization)
 doclify update .
 ```
-
-This is the selective context refresh operation — the equivalent of re-running only the relevant slice of the compaction pipeline.
 
 ---
 
 ## ⚙️ Configuration (`doclify.yaml`)
 
+After running `doclify init`, a `doclify.yaml` configuration is created:
+
 ```yaml
-project: My Awesome Project
+project: Doclify
 structure:
-  - src/main.py
-  - src/utils/helpers.py
+  - doclify/__init__.py
+  - doclify/components/init.py
+  - doclify/components/run.py
+  - doclify/components/update.py
+  - doclify/pipelines/supervisor.py
+  - doclify/utils/llm.py
 llm:
-  model: llama-3.3-70b-versatile
+  model: qwen/qwen3-32b
+  provider: groq
 ```
 
-The `structure` list is the agent's context manifest — the explicit, curated set of files that will be processed. Keeping this list intentional (rather than letting the agent process every file blindly) is itself a context engineering decision: what does the agent actually need to understand this codebase, and what is noise?
-
-Re-run `doclify init` to update the manifest when the project structure changes. Existing model configuration is preserved.
-
----
-
-## 💬 Feedback, Issues, and Discussions
-
-- **Found a bug?** Open an issue with your `doclify.yaml`, the command you ran, and the terminal output.
-- **Generated README was wrong or off-tone?** That is a context engineering failure worth diagnosing. Share the output in [Discussions](https://github.com/KalyanM45/Doclify/discussions) — it helps improve the pipeline for everyone.
-- **Ideas or experiments?** The [Discussions](https://github.com/KalyanM45/Doclify/discussions) tab is the right place. What context engineering techniques have you tried? What changed the output quality?
+- **`project`**: The title and scope of your repository.
+- **`structure`**: The explicit context manifest. You can manually prune noisy files or add custom documentation paths.
+- **`llm.model`**: The target model ID from Groq.
+- **`llm.provider`**: Provider identifier (defaults to `groq`).
 
 ---
 
-## 🤝 Contributing & License
+## 📁 Repository Structure
 
-Contributions make this a better learning environment. If you want to contribute, the most valuable areas are:
+```
+Doclify/
+├── doclify/
+│   ├── components/         # Core CLI actions
+│   │   ├── config.py       # Configuration manager
+│   │   ├── init.py         # Repo discovery & doclify.yaml creation
+│   │   ├── models.py       # Groq model catalog viewer
+│   │   ├── run.py          # Stage 1 & Stage 2 documentation pipeline
+│   │   └── update.py       # Selective cache refresh & instant rebuild
+│   ├── config/             # Constants & configuration defaults
+│   │   └── constants.py
+│   ├── pipelines/          # CLI command supervisor
+│   │   └── supervisor.py   # Click command groups & routing
+│   ├── prompts/            # Version-controlled prompt engineering assets
+│   │   ├── batch_summary.txt  # Stage 1 per-file summarization prompt
+│   │   └── final_summary.txt  # Stage 2 global README synthesis prompt
+│   ├── resources/          # Language templates (.gitignore defaults)
+│   ├── schema/             # Pydantic data schemas
+│   │   └── schema.py
+│   └── utils/              # Helper utilities
+│       ├── extract.py      # Code reading & syntax processing
+│       ├── file_utils.py   # File system & cache operations
+│       ├── llm.py          # Groq client integration
+│       ├── logger.py       # Rich terminal logging
+│       ├── readme.py       # Safe README file operations
+│       └── scanner.py      # .gitignore-aware directory scanner
+├── main.py                 # Application launcher
+├── pyproject.toml          # Package metadata & dependencies
+└── LICENSE                 # GNU AGPLv3 License
+```
 
-- **Prompt engineering** — if the README output was vague or off, the root cause is almost always in `prompts/`. Open an issue with the output and let's diagnose the context failure together.
-- **Context pipeline experiments** — cross-file context injection, retrieval-augmented summarisation, structured intermediate outputs, subagent strategies.
-- **Reliability improvements** — retry logic, atomic cache writes, async parallel summarisation.
-- **New language support** — extending the agent beyond Python to JavaScript, Go, Rust, and other ecosystems.
+---
 
-Please open an issue before starting large changes so we can align on direction first. Feel free to fork, branch, and submit Pull Requests.
+## 🤝 Contributing
 
-This project is licensed under the **GNU AGPLv3 License**. See the [LICENSE](LICENSE) file for details.
+Contributions, issues, and feature requests are welcome!
+
+1. Fork the Project: `https://github.com/hardikkaurani/Doclify`
+2. Create your Feature Branch: `git checkout -b feature/AmazingFeature`
+3. Commit your Changes: `git commit -m 'feat: add AmazingFeature'`
+4. Push to the Branch: `git push origin feature/AmazingFeature`
+5. Open a Pull Request
+
+---
+
+## 📜 License
+
+Distributed under the **GNU Affero General Public License v3.0 (AGPLv3)**. See [`LICENSE`](LICENSE) for more information.
+
+---
+
+<div align="center">
+  <sub>Maintained with ❤️ by <a href="https://github.com/hardikkaurani">Hardik Kaurani</a>. Inspired by Dex Horthy's ACE Research.</sub>
+</div>
