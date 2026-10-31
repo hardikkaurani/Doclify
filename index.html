@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Doclify — AI-Native Codebase Documentation Engine</title>
+  <meta name="description" content="AI-powered documentation generator built with Advanced Context Engineering (ACE) and fast Groq LLM inference.">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['Fira Code', 'monospace'],
+          },
+          colors: {
+            brand: {
+              50: '#fff1f2',
+              500: '#f43f5e',
+              600: '#e11d48',
+              700: '#be123c',
+            },
+            dark: {
+              900: '#090d16',
+              800: '#0f172a',
+              700: '#1e293b',
+              600: '#334155',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .terminal-shadow {
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 100px -20px rgba(225, 29, 72, 0.2);
+    }
+    .gradient-text {
+      background: linear-gradient(135deg, #f43f5e 0%, #fb7185 50%, #facc15 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+  </style>
+</head>
+<body class="bg-dark-900 text-slate-100 font-sans antialiased selection:bg-brand-500 selection:text-white">
+
+  <!-- Navigation -->
+  <header class="border-b border-dark-700/60 sticky top-0 z-50 backdrop-blur-md bg-dark-900/80">
+    <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-brand-600 to-amber-400 flex items-center justify-center font-extrabold text-white text-lg shadow-lg shadow-brand-500/20">
+          ⚡
+        </div>
+        <span class="font-extrabold text-xl tracking-tight text-white">Doclify</span>
+        <span class="text-xs bg-brand-500/10 text-brand-500 border border-brand-500/20 px-2 py-0.5 rounded-full font-mono">v0.2.2</span>
+      </div>
+
+      <nav class="hidden md:flex items-center space-x-8 text-sm font-medium text-slate-300">
+        <a href="#features" class="hover:text-white transition-colors">Features</a>
+        <a href="#architecture" class="hover:text-white transition-colors">ACE Architecture</a>
+        <a href="#quickstart" class="hover:text-white transition-colors">Quickstart</a>
+        <a href="#cli" class="hover:text-white transition-colors">CLI Reference</a>
+      </nav>
+
+      <div class="flex items-center space-x-3">
+        <a href="https://github.com/hardikkaurani/Doclify" target="_blank" rel="noopener noreferrer" 
+           class="inline-flex items-center space-x-2 bg-dark-700 hover:bg-dark-600 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-all border border-dark-600 hover:border-slate-500">
+          <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+          <span>Star on GitHub</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="relative pt-20 pb-28 overflow-hidden">
+    <!-- Glow effect -->
+    <div class="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[350px] bg-brand-600/15 blur-[140px] pointer-events-none rounded-full"></div>
+
+    <div class="max-w-5xl mx-auto px-6 text-center relative z-10">
+      <div class="inline-flex items-center space-x-2 bg-dark-800 border border-dark-600/60 px-3.5 py-1.5 rounded-full text-xs text-slate-300 font-mono mb-6">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span>Powered by Advanced Context Engineering & Groq LPUs</span>
+      </div>
+
+      <h1 class="text-4xl sm:text-6xl font-extrabold tracking-tight text-white mb-6 leading-[1.15]">
+        Automate Codebase Docs with <br>
+        <span class="gradient-text">Zero Context Degradation</span>
+      </h1>
+
+      <p class="text-lg sm:text-xl text-slate-400 max-w-3xl mx-auto mb-10 leading-relaxed font-light">
+        Doclify scans your codebase, compiles structured multi-stage context using isolated subagents, and synthesizes production-grade documentation without prompt pollution.
+      </p>
+
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
+        <a href="#quickstart" class="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-brand-600 hover:bg-brand-500 font-semibold text-white shadow-lg shadow-brand-600/30 transition-all text-center">
+          Get Started in 30 Seconds →
+        </a>
+        <a href="https://github.com/hardikkaurani/Doclify" target="_blank" rel="noopener noreferrer"
+           class="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-dark-800 hover:bg-dark-700 font-semibold text-slate-200 border border-dark-600 transition-all text-center">
+          Explore Repository
+        </a>
+      </div>
+
+      <!-- Live Terminal Simulation Preview -->
+      <div class="max-w-3xl mx-auto text-left rounded-2xl bg-dark-800 border border-dark-600/80 terminal-shadow overflow-hidden">
+        <div class="bg-dark-900/90 px-4 py-3 border-b border-dark-700/80 flex items-center justify-between">
+          <div class="flex items-center space-x-2">
+            <span class="w-3 h-3 rounded-full bg-rose-500/80"></span>
+            <span class="w-3 h-3 rounded-full bg-amber-500/80"></span>
+            <span class="w-3 h-3 rounded-full bg-emerald-500/80"></span>
+          </div>
+          <span class="text-xs font-mono text-slate-400">bash — doclify execution</span>
+          <div class="w-10"></div>
+        </div>
+        <div class="p-6 font-mono text-sm space-y-3 leading-relaxed text-slate-300 overflow-x-auto">
+          <p class="text-slate-500"># 1. Initialize context manifest</p>
+          <p><span class="text-brand-500">$</span> doclify init</p>
+          <p class="text-emerald-400 pl-4">✔ Scanned 34 project files (respecting .gitignore)</p>
+          <p class="text-emerald-400 pl-4">✔ Generated doclify.yaml & created .doclify/ cache</p>
+          
+          <p class="text-slate-500 pt-2"># 2. Run isolated compaction pipeline</p>
+          <p><span class="text-brand-500">$</span> doclify run --model llama-3.3-70b-versatile</p>
+          <p class="text-sky-400 pl-4">[Stage 1/2] Compacting 18 core source files into dense signal...</p>
+          <p class="text-slate-400 pl-4">→ Caching distilled state in .doclify/cache.json</p>
+          <p class="text-sky-400 pl-4">[Stage 2/2] Global synthesis agent synthesizing final documentation...</p>
+          <p class="text-emerald-400 pl-4">✔ Backed up old README to README-prev.md</p>
+          <p class="text-emerald-400 font-bold pl-4">🎉 README.md generated successfully in 2.4s!</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Core Features Grid -->
+  <section id="features" class="py-24 border-t border-dark-800 bg-dark-900/50">
+    <div class="max-w-6xl mx-auto px-6">
+      <div class="text-center max-w-2xl mx-auto mb-16">
+        <h2 class="text-xs uppercase font-mono tracking-widest text-brand-500 mb-2">Engineered for Scale</h2>
+        <p class="text-3xl font-extrabold text-white">Why Doclify Outperforms Generic Prompts</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <!-- Feature 1 -->
+        <div class="bg-dark-800/60 p-8 rounded-2xl border border-dark-700/60 hover:border-brand-500/40 transition-all">
+          <div class="w-12 h-12 rounded-xl bg-brand-500/10 text-brand-500 flex items-center justify-center text-2xl mb-6">
+            🧬
+          </div>
+          <h3 class="text-xl font-bold text-white mb-3">Subagent Context Isolation</h3>
+          <p class="text-slate-400 text-sm leading-relaxed">
+            Every file is processed in an ephemeral, bounded context window. Raw token noise and syntax boilerplate never enter the global synthesis window.
+          </p>
+        </div>
+
+        <!-- Feature 2 -->
+        <div class="bg-dark-800/60 p-8 rounded-2xl border border-dark-700/60 hover:border-brand-500/40 transition-all">
+          <div class="w-12 h-12 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center text-2xl mb-6">
+            ⚡
+          </div>
+          <h3 class="text-xl font-bold text-white mb-3">Groq LPU Acceleration</h3>
+          <p class="text-slate-400 text-sm leading-relaxed">
+            Runs blazingly fast inference on Groq hardware (Llama 3.3, Qwen 32B), generating complete repository docs in seconds instead of minutes.
+          </p>
+        </div>
+
+        <!-- Feature 3 -->
+        <div class="bg-dark-800/60 p-8 rounded-2xl border border-dark-700/60 hover:border-brand-500/40 transition-all">
+          <div class="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-2xl mb-6">
+            💾
+          </div>
+          <h3 class="text-xl font-bold text-white mb-3">Incremental Cache</h3>
+          <p class="text-slate-400 text-sm leading-relaxed">
+            State is persisted in <code>.doclify/cache.json</code>. When you modify a file, run <code>doclify update &lt;path&gt;</code> to re-summarize only the diff.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ACE Architecture -->
+  <section id="architecture" class="py-24 border-t border-dark-800">
+    <div class="max-w-6xl mx-auto px-6">
+      <div class="text-center max-w-2xl mx-auto mb-16">
+        <h2 class="text-xs uppercase font-mono tracking-widest text-brand-500 mb-2">Research Backed</h2>
+        <p class="text-3xl font-extrabold text-white">The ACE (Advanced Context Engineering) Pipeline</p>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+        <div class="space-y-6">
+          <div class="p-6 rounded-2xl bg-dark-800/80 border border-dark-700/80">
+            <h4 class="font-bold text-white text-lg mb-2 flex items-center gap-2">
+              <span class="w-6 h-6 rounded-md bg-brand-500/20 text-brand-500 flex items-center justify-center text-xs font-mono">1</span>
+              Frequent Intentional Compaction (FIC)
+            </h4>
+            <p class="text-slate-400 text-sm">
+              Keeps context utilization in the optimal 40–60% zone. A 500-line source file is compacted into 3–4 dense, structured sentences before entering synthesis.
+            </p>
+          </div>
+
+          <div class="p-6 rounded-2xl bg-dark-800/80 border border-dark-700/80">
+            <h4 class="font-bold text-white text-lg mb-2 flex items-center gap-2">
+              <span class="w-6 h-6 rounded-md bg-brand-500/20 text-brand-500 flex items-center justify-center text-xs font-mono">2</span>
+              Research → Plan → Implement Separation
+            </h4>
+            <p class="text-slate-400 text-sm">
+              <code>doclify init</code> is pure discovery (manifest generation). <code>doclify run</code> compiles summaries into final documentation. Concerns never bleed across stages.
+            </p>
+          </div>
+
+          <div class="p-6 rounded-2xl bg-dark-800/80 border border-dark-700/80">
+            <h4 class="font-bold text-white text-lg mb-2 flex items-center gap-2">
+              <span class="w-6 h-6 rounded-md bg-brand-500/20 text-brand-500 flex items-center justify-center text-xs font-mono">3</span>
+              Prompts as Versioned Source Assets
+            </h4>
+            <p class="text-slate-400 text-sm">
+              Prompt templates (<code>batch_summary.txt</code> & <code>final_summary.txt</code>) are treated as first-class engineering artifacts with strict formatting boundaries and negative constraints.
+            </p>
+          </div>
+        </div>
+
+        <!-- Workflow Diagram Box -->
+        <div class="bg-dark-800 p-8 rounded-2xl border border-dark-700 font-mono text-xs text-slate-300 space-y-4">
+          <div class="text-brand-500 font-bold mb-4 uppercase tracking-wider text-[11px]">Pipeline Dataflow:</div>
+          <div class="p-3 bg-dark-900 rounded-lg border border-dark-700 flex items-center justify-between">
+            <span>[Source Files]</span>
+            <span class="text-slate-500">─── scanner ───▶</span>
+            <span class="text-amber-400">[doclify.yaml]</span>
+          </div>
+          <div class="p-3 bg-dark-900 rounded-lg border border-dark-700 flex items-center justify-between">
+            <span>[Raw Code (100k+ tokens)]</span>
+            <span class="text-slate-500">─── subagents ─▶</span>
+            <span class="text-emerald-400">[cache.json (5k tokens)]</span>
+          </div>
+          <div class="p-3 bg-dark-900 rounded-lg border border-dark-700 flex items-center justify-between">
+            <span>[cache.json summaries]</span>
+            <span class="text-slate-500">─── synthesis ─▶</span>
+            <span class="text-rose-400">[README.md Output]</span>
+          </div>
+          <div class="text-slate-400 text-[11px] pt-2">
+            Result: <strong>95% token noise reduction</strong>, zero hallucinated methods, and crystal-clear architectural narrative.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Quickstart Guide -->
+  <section id="quickstart" class="py-24 border-t border-dark-800 bg-dark-900/50">
+    <div class="max-w-4xl mx-auto px-6">
+      <div class="text-center mb-16">
+        <h2 class="text-xs uppercase font-mono tracking-widest text-brand-500 mb-2">Getting Started</h2>
+        <p class="text-3xl font-extrabold text-white">Setup in 3 Commands</p>
+      </div>
+
+      <div class="space-y-6">
+        <!-- Step 1 -->
+        <div class="bg-dark-800 p-6 rounded-2xl border border-dark-700">
+          <div class="flex items-center justify-between mb-3">
+            <span class="font-bold text-white text-base">1. Install Doclify</span>
+            <span class="text-xs font-mono text-slate-500">pip / uv</span>
+          </div>
+          <div class="bg-dark-900 p-4 rounded-xl font-mono text-sm text-slate-200 border border-dark-700/80">
+            git clone https://github.com/hardikkaurani/Doclify.git<br>
+            cd Doclify &amp;&amp; pip install -e .
+          </div>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="bg-dark-800 p-6 rounded-2xl border border-dark-700">
+          <div class="flex items-center justify-between mb-3">
+            <span class="font-bold text-white text-base">2. Set Your Groq API Key</span>
+            <span class="text-xs font-mono text-slate-500">console.groq.com</span>
+          </div>
+          <div class="bg-dark-900 p-4 rounded-xl font-mono text-sm text-slate-200 border border-dark-700/80">
+            export GROQ_API_KEY="your_api_key_here"<br>
+            <span class="text-slate-500"># or on Windows PowerShell: $env:GROQ_API_KEY="your_api_key_here"</span>
+          </div>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="bg-dark-800 p-6 rounded-2xl border border-dark-700">
+          <div class="flex items-center justify-between mb-3">
+            <span class="font-bold text-white text-base">3. Generate Documentation</span>
+            <span class="text-xs font-mono text-slate-500">run &amp; done</span>
+          </div>
+          <div class="bg-dark-900 p-4 rounded-xl font-mono text-sm text-slate-200 border border-dark-700/80">
+            doclify init &amp;&amp; doclify run
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CLI Reference -->
+  <section id="cli" class="py-24 border-t border-dark-800">
+    <div class="max-w-5xl mx-auto px-6">
+      <div class="text-center mb-16">
+        <h2 class="text-xs uppercase font-mono tracking-widest text-brand-500 mb-2">Command Reference</h2>
+        <p class="text-3xl font-extrabold text-white">Doclify CLI Commands</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="p-6 rounded-2xl bg-dark-800 border border-dark-700">
+          <code class="text-brand-500 font-bold font-mono text-sm">doclify init</code>
+          <p class="text-slate-400 text-sm mt-2">
+            Discovers project files respecting <code>.gitignore</code> and creates <code>doclify.yaml</code> context manifest.
+          </p>
+        </div>
+
+        <div class="p-6 rounded-2xl bg-dark-800 border border-dark-700">
+          <code class="text-brand-500 font-bold font-mono text-sm">doclify models</code>
+          <p class="text-slate-400 text-sm mt-2">
+            Displays real-time interactive table of all available Groq models with context limits and developers.
+          </p>
+        </div>
+
+        <div class="p-6 rounded-2xl bg-dark-800 border border-dark-700">
+          <code class="text-brand-500 font-bold font-mono text-sm">doclify set default &lt;model&gt;</code>
+          <p class="text-slate-400 text-sm mt-2">
+            Configures default model in <code>doclify.yaml</code> (e.g. <code>llama-3.3-70b-versatile</code>).
+          </p>
+        </div>
+
+        <div class="p-6 rounded-2xl bg-dark-800 border border-dark-700">
+          <code class="text-brand-500 font-bold font-mono text-sm">doclify update &lt;path&gt;</code>
+          <p class="text-slate-400 text-sm mt-2">
+            Re-runs compaction only for the target file, or pass <code>.</code> to immediately rebuild docs from cache.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="border-t border-dark-800 py-12 text-center text-slate-500 text-sm">
+    <div class="max-w-6xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="flex items-center space-x-2">
+        <span class="text-white font-bold">Doclify</span>
+        <span>•</span>
+        <span>Distributed under GNU AGPLv3</span>
+      </div>
+      <div>
+        Maintained with ❤️ by <a href="https://github.com/hardikkaurani" class="text-slate-300 hover:text-white underline">Hardik Kaurani</a>
+      </div>
+      <div>
+        <a href="https://github.com/hardikkaurani/Doclify" class="hover:text-slate-300 transition-colors">GitHub Repository</a>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>
