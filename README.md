@@ -1,6 +1,6 @@
 <div align="center">
 
-# ⚡ Doclify
+#  Doclify !
 
 **AI-Native Codebase Documentation Engine & Context Engineering Laboratory**
 
